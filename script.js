@@ -10,92 +10,79 @@ console.log("Q.1");
  * @returns {Function} 呼び出しが連鎖でき、value メソッドで値を取り出せる関数
  */
 // ここにコードを書きましょう
+
+
+
 // function addCurry(x){
-//   //1.だけPASSする関数
-//   return {value:()=>x};
-
-//   //2.だけPASSする関数
-//   // function add(y){
-//   //   function value(){
-//   //     if(!y){
-//   //       return x;
-//   //     } else {
-//   //       return x+y;
-//   //     }
-//   //   }
-//   //   return {value};
-//   // }
-//   // return add;
-
-//   //3.だけPASSする関数
-//   // function add(y){
-//   //   function add2(z){
-//   //     function value(){
-//   //       // if(!y){
-//   //       //   return x;
-//   //       // } else {
-//   //       //   return x+y;
-//   //       // }
-//   //       return x+y+z;
-//   //     }
-//   //     return {value};
-//   //   }
-//   //   return add2;
-//   // }
-//   // return add;
-
-//   // 2.と3.をPASSする関数
-//   // function add(y){
-//   //   function add2(z){
-//   //     function value(){
-//   //       // if(!y){
-//   //       //   return x;
-//   //       // } else {
-//   //       //   return x+y;
-//   //       // }
-//   //       return x+y+z;
-//   //     }
-//   //     return {value};
-//   //   }
-//   //   return add2;
-//   // }
-//   // return add;
-
+//   return {value:()=>x}; //オブジェクト(メソッドを返す)
 // }
 
-// 関数を一度呼び出すだけでも、value() で値を得られます。
-// console.log(addCurry(1))
-// test(addCurry(1).value(), 1);
-
-// console.log(addCurry(1)(2))
-
-// 関数呼び出しを連鎖させて、累計を出すことができます。
-// test(addCurry(1)(2).value(), 3);
-// test(addCurry(1)(2)(3).value(), 6);
-// test(addCurry(1)(2)(3)(4)(5)(6).value(), 21);
-
-
-// test2.value = function() {
-//   console.log("test");
+// function addCurry(x){
+//   function add(y){
+//     return {value:()=>x+y}; //オブジェクト(メソッドを返す)
+//   }
+//   return add; //内部関数を返してカリー化対応
 // }
 
-// test2.value();
+// test(addCurry(1).value(), 1);    //エラー：addCurry(...).value is not a function
+// test(addCurry(1)(2).value(), 3); //PASS
 
-// console.log(test2)
+
+// test(addCurry(1).value(), 1);    //PASS
+// test(addCurry(1)(2).value(), 3); //エラー：addCurry(...) is not a function
 
 
+// function addCurry(x){
+//   function add(y){
+//     return {value:()=>x+y}; //オブジェクト(メソッドを返す)
+//   }
+//   add.value = function() {return x}; //関数オブジェクトにメソッドを追加
+//   return add; //内部関数を返してカリー化対応
+// }
+
+// test(addCurry(1).value(), 1);    //PASS
+// test(addCurry(1)(2).value(), 3); //PASS
+
+//一つ一つ処理
+// function addCurry(x){
+//   function add(y){
+//     function add2(z){
+//       function add3(a){
+//         function add4(b){
+//           function add5(c){
+//             return {value:()=> x+y+z+a+b+c};
+//           }
+//           add5.value = ()=> x+y+z+a+b;
+//           return add5; //内部関数を返してカリー化対応
+//         }
+//         add4.value = ()=> x+y+z+a;
+//         return add4; //内部関数を返してカリー化対応
+//       }
+//       add3.value = ()=> x+y+z;
+//       return add3; //内部関数を返してカリー化対応
+//     }
+//     add2.value = ()=> x+y;
+//     return add2; //内部関数を返してカリー化対応
+//   }
+//   add.value = ()=>x;
+//   return add; //内部関数を返してカリー化対応
+// }
+
+// test(addCurry(1).value(), 1);    //PASS
+// test(addCurry(1)(2).value(), 3); //PASS
+// test(addCurry(1)(2)(3)(4)(5)(6).value(), 21); //PASS
+
+//リファクタリング
 function addCurry(x){
-  //1.だけPASSする関数
-  // return {value:()=>x};
-
-  //2.だけPASSする関数
+  let sum = x; //積算用の変数定義＆初期化
   function add(y){
-    return {value:()=>x+y};
+    sum += y; //sumは親関数に定義⇒関数内で使用可
+    return add;
   }
-  return add;
-
+  add.value = ()=>sum; //valueメソッドで合計値
+  return add; //内部関数を返してカリー化対応
 }
 
-// test(addCurry(1).value(), 1);
-test(addCurry(1)(2).value(), 3);
-test(addCurry(1)(2)(3)(4)(5)(6).value(), 21);
+test(addCurry(1).value(), 1);    //PASS
+test(addCurry(1)(2).value(), 3); //PASS
+test(addCurry(1)(2)(3)(4)(5)(6).value(), 21); //PASS
